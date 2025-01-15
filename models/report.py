@@ -1,21 +1,20 @@
-# models/report.py
 from odoo import models, api
 from weasyprint import HTML
+import base64
 
-class Report(models.AbstractModel):
-    _inherit = 'ir.actions.report'  # Heredamos de la clase base de reportes
+class IrActionsReport(models.Model):
+    _inherit = "ir.actions.report"
 
-    @api.model
-    def _run_wkhtmltopdf(self, report_name, docids, data=None):
-        """
-        Sobrescribimos la función que usa wkhtmltopdf y la reemplazamos con WeasyPrint.
-        """
-        # Obtener el contenido HTML del reporte usando el sistema de QWeb
-        report = self.env['ir.actions.report']._get_report_from_name(report_name)
-        html_content = report.render_qweb_pdf(docids)[0]
+    def _render_qweb_pdf(self, res_ids=None, data=None):
+        """Sobrescribir el método para usar WeasyPrint."""
+        # Renderizar el contenido HTML
+        html_content, _ = self._render_qweb_html(res_ids, data=data)
 
-        # Usamos WeasyPrint para convertir el HTML a PDF
+        # Usar WeasyPrint para convertir HTML a PDF
         pdf = HTML(string=html_content).write_pdf()
 
-        # Devolvemos el PDF generado por WeasyPrint
-        return pdf
+        return pdf, "pdf"
+
+    def _render_qweb_html(self, res_ids=None, data=None):
+        """Método original para renderizar HTML (puedes sobrescribir si necesitas ajustes)."""
+        return super()._render_qweb_html(res_ids=res_ids, data=data)
